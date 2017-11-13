@@ -4,6 +4,7 @@ import win32clipboard as wc
 import win32con
 from gtts import gTTS
 import random
+from requests.exceptions import SSLError
 # from pydub import AudioSegment
 
 
@@ -41,7 +42,7 @@ def parse_argument():
     parser.add_argument('--shuffle', default=False, type=bool)
     parser.add_argument('--transpose', default=True, type=bool)
     parser.add_argument('--begin', default=1, type=int)
-    parser.add_argument('--repeat', default=1, type=int)
+    parser.add_argument('--repeat', default=2, type=int)
     return parser.parse_args()
 
 
@@ -64,8 +65,16 @@ def main():
         tts = gTTS(text=words_queue, slow=slow, lang='en')
         fname = name + '_' + str(begin).zfill(4) + '.mp3'
         pname = os.path.join('output', fname)
-        tts.save(pname)
-        begin += 1
+
+        while True:
+            try:
+                tts.save(pname)
+                begin += 1
+                break
+            except SSLError as e:
+                switch = raw_input("Network error. Input 'r' to retry. Input 's' to skip")
+                if switch == 's':
+                    break
 
 
 if __name__ == "__main__":
